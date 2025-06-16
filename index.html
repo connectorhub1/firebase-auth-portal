@@ -2,42 +2,51 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Golden Firebase Auth</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Login Page</title>
     <style>
-      body {
+      /* General Reset */
+      * {
         margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
         font-family: 'Segoe UI', 'Roboto', 'Arial', sans-serif;
         background: #000;
         overflow: hidden;
         height: 100vh;
+        position: relative;
       }
 
-      .background {
+      /* Animated Golden Bubbles */
+      .bubbles {
         position: fixed;
         top: 0;
         left: 0;
-        width: 100%;
         height: 100%;
+        width: 100%;
         z-index: 0;
-        overflow: hidden;
+        pointer-events: none;
       }
 
-      .bubble {
+      .bubbles span {
         position: absolute;
+        display: block;
         width: 20px;
         height: 20px;
-        background: radial-gradient(circle, gold, transparent);
+        background: gold;
         border-radius: 50%;
-        animation: moveBubble 15s linear infinite;
-        opacity: 0.4;
+        animation: rise 20s linear infinite;
+        opacity: 0.2;
       }
 
-      @keyframes moveBubble {
-        from {
+      @keyframes rise {
+        0% {
           transform: translateY(100vh) scale(0.5);
         }
-        to {
+        100% {
           transform: translateY(-10vh) scale(1.2);
         }
       }
@@ -46,25 +55,26 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        height: 100vh;
+        min-height: 100vh;
         position: relative;
         z-index: 1;
       }
 
       .card {
-        background: #111;
-        color: gold;
+        background: rgba(0, 0, 0, 0.85);
         padding: 2.5rem 2rem;
         border-radius: 20px;
-        box-shadow: 0 8px 36px rgba(255, 215, 0, 0.2);
+        box-shadow: 0 8px 36px 0 rgba(255, 215, 0, 0.3);
         text-align: center;
         max-width: 350px;
         width: 100%;
+        color: #fff;
+        border: 1px solid gold;
       }
 
       .google-logo {
         width: 48px;
-        margin-bottom: 10px;
+        margin-bottom: 20px;
         border-radius: 8px;
       }
 
@@ -76,31 +86,39 @@
         border-radius: 6px;
         padding: 12px 24px;
         font-size: 1rem;
-        font-weight: 600;
+        font-weight: 500;
         cursor: pointer;
-        transition: background 0.18s;
-        box-shadow: 0 2px 4px rgba(255, 215, 0, 0.4);
+        transition: background 0.2s;
+        box-shadow: 0 2px 4px rgba(255, 215, 0, 0.3);
         display: inline-flex;
         align-items: center;
+        gap: 10px;
       }
 
       .button:hover {
-        background: #ffd700;
+        background: #ffd700cc;
+      }
+
+      .error {
+        color: #e53935;
+        margin-top: 14px;
+        font-size: 1rem;
       }
     </style>
   </head>
+
   <body>
-    <div class="background">
-      <!-- Bubbles -->
-      <div class="bubble" style="left: 10%; animation-delay: 0s;"></div>
-      <div class="bubble" style="left: 20%; animation-delay: 2s;"></div>
-      <div class="bubble" style="left: 30%; animation-delay: 4s;"></div>
-      <div class="bubble" style="left: 50%; animation-delay: 1s;"></div>
-      <div class="bubble" style="left: 60%; animation-delay: 3s;"></div>
-      <div class="bubble" style="left: 80%; animation-delay: 5s;"></div>
-      <div class="bubble" style="left: 90%; animation-delay: 0.5s;"></div>
+    <!-- Background animation -->
+    <div class="bubbles">
+      <span style="left: 10%; animation-delay: 0s;"></span>
+      <span style="left: 25%; animation-delay: 2s; width: 15px; height: 15px;"></span>
+      <span style="left: 40%; animation-delay: 4s; width: 12px; height: 12px;"></span>
+      <span style="left: 55%; animation-delay: 6s; width: 18px; height: 18px;"></span>
+      <span style="left: 70%; animation-delay: 1s; width: 20px; height: 20px;"></span>
+      <span style="left: 85%; animation-delay: 3s; width: 10px; height: 10px;"></span>
     </div>
 
+    <!-- Login Card -->
     <div class="container">
       <div class="card">
         <img
@@ -108,9 +126,24 @@
           alt="Google logo"
           class="google-logo"
         />
-        <h2>Sign In With Google</h2>
-        <button class="button">Sign in with Google</button>
+        <button class="button" onclick="handleGoogleSignin()">
+          <svg width="20" height="20" viewBox="0 0 533.5 544.3" xmlns="http://www.w3.org/2000/svg">
+            <path fill="#4285F4" d="M533.5 278.4c0-17.4-1.6-34.1-4.6-50.4H272v95.4h146.9c-6.4 34-25 62.7-53.2 82v68.1h85.9c50.3-46.3 81.9-114.5 81.9-195.1z"/>
+            <path fill="#34A853" d="M272 544.3c72.6 0 133.5-24 178-65.5l-85.9-68.1c-23.9 16-54.3 25.3-92.1 25.3-70.8 0-130.7-47.8-152.1-112.1H33.4v70.6c44.7 88.1 136.8 149.8 238.6 149.8z"/>
+            <path fill="#FBBC04" d="M119.9 323.9c-10.1-30-10.1-62.4 0-92.4V160.9H33.4c-33.4 66.8-33.4 146.6 0 213.4l86.5-70.4z"/>
+            <path fill="#EA4335" d="M272 107.7c39.5 0 75 13.6 103 40.4l77.1-77.1C405.4 25 344.5 0 272 0 170.2 0 78.1 61.7 33.4 149.8l86.5 70.6c21.4-64.3 81.3-112.1 152.1-112.1z"/>
+          </svg>
+          Sign in with Google
+        </button>
       </div>
     </div>
+
+    <!-- Add your real logic below -->
+    <script>
+      function handleGoogleSignin() {
+        alert("This should trigger Google Sign-In.");
+        // Replace alert with real Firebase Auth logic
+      }
+    </script>
   </body>
 </html>
