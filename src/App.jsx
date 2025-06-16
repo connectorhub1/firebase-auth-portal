@@ -7,6 +7,9 @@ function App() {
   const [user, setUser] = useState(null);
   const [error, setError] = useState("");
 
+  const loginSound = new Audio("/login.mp3");
+  const logoutSound = new Audio("/logout.mp3");
+
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((u) => setUser(u));
     return () => unsubscribe();
@@ -16,6 +19,7 @@ function App() {
     setError("");
     try {
       await signInWithPopup(auth, googleProvider);
+      loginSound.play();
     } catch (e) {
       setError(e.message);
     }
@@ -25,6 +29,7 @@ function App() {
     setError("");
     try {
       await signOut(auth);
+      logoutSound.play();
     } catch (e) {
       setError(e.message);
     }
