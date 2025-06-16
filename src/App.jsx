@@ -57,11 +57,7 @@ function App() {
   return (
     <div className="container">
       <div className="card">
-        <img
-          src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg"
-          alt="Google logo"
-          className="google-logo"
-        />
+
         <h2>Sign In With Google</h2>
         <button className="button google-btn" onClick={handleGoogleSignin}>
           Sign in with Google
