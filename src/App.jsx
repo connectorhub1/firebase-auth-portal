@@ -1,16 +1,23 @@
 import React, { useEffect, useState } from "react";
 import { initializeApp } from "firebase/app";
-import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "firebase/auth";
+import {
+  getAuth,
+  signInWithPopup,
+  GoogleAuthProvider,
+  onAuthStateChanged,
+  signOut,
+} from "firebase/auth";
 import "./App.css";
 
-// Firebase config
+// ✅ Your Firebase configuration
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID",
+  apiKey: "AIzaSyBOUvPz5GUz-hf4G0f9cVPmAX2pphdwRtg",
+  authDomain: "authportal-74915.firebaseapp.com",
+  projectId: "authportal-74915",
+  storageBucket: "authportal-74915.firebasestorage.app",
+  messagingSenderId: "42499454353",
+  appId: "1:42499454353:web:1f59c0b6938681ff249630",
+  measurementId: "G-4XBXDB6TTZ"
 };
 
 // Initialize Firebase
@@ -37,9 +44,10 @@ function App() {
       setUser(currentUser);
 
       if (currentUser) {
-        // Fetch user data from Google Sheet API or a backend that links Sheets to user info
         try {
-          const res = await fetch("https://YOUR_BACKEND_API/getUserData?email=" + currentUser.email);
+          const res = await fetch(
+            `https://script.google.com/macros/s/AKfycbwxpUD2FVQKVhFYX2rSg4b4sqtEcZ9YuMcxfimok6sJWvAx4VYlScl-QwbiHb5My6xK-g/exec?email=${currentUser.email}`
+          );
           const data = await res.json();
           setSheetData(data);
         } catch (error) {
@@ -85,17 +93,27 @@ function App() {
                 }}
               />
               <h2 style={{ color: "#ffd700", fontWeight: "bold" }}>Welcome,</h2>
-              <h3 style={{ color: "#ffd700", marginBottom: "10px" }}>Islamic bayan</h3>
+              <h3 style={{ color: "#ffd700", marginBottom: "10px" }}>
+                Islamic bayan
+              </h3>
             </div>
 
             <div style={{ textAlign: "left", marginBottom: "20px" }}>
-              <p><strong>Full Name:</strong> {sheetData.name || user.displayName}</p>
-              <p><strong>Whatsapp:</strong> {sheetData.whatsapp || "N/A"}</p>
-              <p><strong>Profile Picture:</strong></p>
+              <p>
+                <strong>Full Name:</strong>{" "}
+                {sheetData.name || user.displayName}
+              </p>
+              <p>
+                <strong>Whatsapp:</strong> {sheetData.whatsapp || "N/A"}
+              </p>
+              <p>
+                <strong>Profile Picture:</strong>
+              </p>
 
               {sheetData.profilePicture || sheetData.picture ? (
                 (() => {
-                  const imageURL = sheetData.profilePicture || sheetData.picture;
+                  const imageURL =
+                    sheetData.profilePicture || sheetData.picture;
                   let finalImageURL = imageURL;
                   if (imageURL?.includes("drive.google.com")) {
                     const match = imageURL.match(/[-\w]{25,}/);
