@@ -67,12 +67,12 @@ function App() {
 
           {sheetData && !sheetData.error && (
             <div style={{ marginTop: "1rem", textAlign: "left" }}>
-              <p><strong>Full Name:</strong> {sheetData.fullname || "N/A"}</p>
+              <p><strong>Full Name:</strong> {sheetData.fullName || "N/A"}</p>
               <p><strong>Whatsapp:</strong> {sheetData.whatsapp || "N/A"}</p>
               <p><strong>Profile Picture:</strong></p>
-              {sheetData.picture ? (
+              {sheetData.profilePicture ? (
                 <img
-                  src={sheetData.picture.replace("open?id=", "uc?export=view&id=")}
+                  src={sheetData.profilePicture.replace("open?id=", "uc?export=view&id=")}
                   alt="Profile"
                   style={{ width: "120px", borderRadius: "10px", marginTop: "5px" }}
                 />
