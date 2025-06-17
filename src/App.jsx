@@ -69,10 +69,16 @@ function App() {
             <div style={{ marginTop: "1rem", textAlign: "left" }}>
               <p><strong>Full Name:</strong> {sheetData.fullname || "N/A"}</p>
               <p><strong>Whatsapp:</strong> {sheetData.whatsapp || "N/A"}</p>
-              <p>
-                <strong>Profile Picture:</strong><br />
-                <a href={sheetData.picture} target="_blank" rel="noreferrer">View Picture</a>
-              </p>
+              <p><strong>Profile Picture:</strong></p>
+              {sheetData.picture ? (
+                <img
+                  src={sheetData.picture.replace("open?id=", "uc?export=view&id=")}
+                  alt="Profile"
+                  style={{ width: "120px", borderRadius: "10px", marginTop: "5px" }}
+                />
+              ) : (
+                <p>N/A</p>
+              )}
             </div>
           )}
 
