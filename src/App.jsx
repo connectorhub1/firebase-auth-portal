@@ -6,6 +6,7 @@ import "./index.css";
 function App() {
   const [user, setUser] = useState(null);
   const [error, setError] = useState("");
+  const [sheetData, setSheetData] = useState(null);
 
   const loginSound = new Audio("/login.mp3");
   const logoutSound = new Audio("/logout.mp3");
@@ -14,6 +15,22 @@ function App() {
     const unsubscribe = auth.onAuthStateChanged((u) => setUser(u));
     return () => unsubscribe();
   }, []);
+
+  useEffect(() => {
+    if (user?.email) {
+      fetch(
+        `https://script.google.com/macros/s/AKfycbwxpUD2FVQKVhFYX2rSg4b4sqtEcZ9YuMcxfimok6sJWvAx4VYlScl-QwbiHb5My6xK-g/exec?email=${encodeURIComponent(user.email)}`
+      )
+        .then((res) => res.json())
+        .then((data) => {
+          setSheetData(data);
+          console.log("Fetched Google Sheet data:", data);
+        })
+        .catch((err) => {
+          console.error("Error fetching data from Google Sheet:", err);
+        });
+    }
+  }, [user]);
 
   const handleGoogleSignin = async () => {
     setError("");
@@ -30,6 +47,7 @@ function App() {
     try {
       await signOut(auth);
       logoutSound.play();
+      setSheetData(null);
     } catch (e) {
       setError(e.message);
     }
@@ -46,6 +64,24 @@ function App() {
           />
           <h2>Welcome,</h2>
           <h3>{user.displayName || user.email}</h3>
+          
+          {sheetData && !sheetData.error && (
+            <div style={{ marginTop: "1rem", textAlign: "left" }}>
+              <p><strong>Full Name:</strong> {sheetData.name}</p>
+              <p><strong>Whatsapp:</strong> {sheetData.contact}</p>
+              <p>
+                <strong>Profile Picture:</strong><br />
+                <a href={sheetData.picture} target="_blank" rel="noreferrer">View Picture</a>
+              </p>
+            </div>
+          )}
+
+          {sheetData?.error && (
+            <p className="error" style={{ marginTop: "1rem" }}>
+              {sheetData.error}
+            </p>
+          )}
+
           <button className="button" onClick={handleSignout}>
             Sign out
           </button>
@@ -57,7 +93,6 @@ function App() {
   return (
     <div className="container">
       <div className="card">
-
         <h2>Sign In With Google</h2>
         <button className="button google-btn" onClick={handleGoogleSignin}>
           Sign in with Google
