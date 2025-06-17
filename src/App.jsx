@@ -19,7 +19,9 @@ function App() {
   useEffect(() => {
     if (user?.email) {
       fetch(
-        `https://script.google.com/macros/s/AKfycbwxpUD2FVQKVhFYX2rSg4b4sqtEcZ9YuMcxfimok6sJWvAx4VYlScl-QwbiHb5My6xK-g/exec?email=${encodeURIComponent(user.email)}`
+        `https://script.google.com/macros/s/AKfycbwxpUD2FVQKVhFYX2rSg4b4sqtEcZ9YuMcxfimok6sJWvAx4VYlScl-QwbiHb5My6xK-g/exec?email=${encodeURIComponent(
+          user.email
+        )}`
       )
         .then((res) => res.json())
         .then((data) => {
@@ -67,14 +69,34 @@ function App() {
 
           {sheetData && !sheetData.error && (
             <div style={{ marginTop: "1rem", textAlign: "left" }}>
-              <p><strong>Full Name:</strong> {sheetData.fullName || "N/A"}</p>
-              <p><strong>Whatsapp:</strong> {sheetData.whatsapp || "N/A"}</p>
-              <p><strong>Profile Picture:</strong></p>
-              {sheetData.profilePicture ? (
+              <p>
+                <strong>Full Name:</strong>{" "}
+                {sheetData.fullName || sheetData.fullname || "N/A"}
+              </p>
+              <p>
+                <strong>Whatsapp:</strong> {sheetData.whatsapp || "N/A"}
+              </p>
+              <p>
+                <strong>Profile Picture:</strong>
+              </p>
+              {sheetData.profilePicture || sheetData.picture ? (
                 <img
-                  src={sheetData.profilePicture.replace("open?id=", "uc?export=view&id=")}
+                  src={
+                    (sheetData.profilePicture || sheetData.picture).replace(
+                      "open?id=",
+                      "uc?export=view&id="
+                    )
+                  }
                   alt="Profile"
-                  style={{ width: "120px", borderRadius: "10px", marginTop: "5px" }}
+                  style={{
+                    width: "180px",
+                    height: "180px",
+                    borderRadius: "25px",
+                    marginTop: "10px",
+                    objectFit: "cover",
+                    border: "3px solid #ffd700",
+                    boxShadow: "0 4px 12px rgba(255, 215, 0, 0.3)",
+                  }}
                 />
               ) : (
                 <p>N/A</p>
