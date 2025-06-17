@@ -1,131 +1,162 @@
-import React, { useState, useEffect } from "react";
-import { auth, googleProvider } from "./firebase";
-import { signInWithPopup, signOut } from "firebase/auth";
-import "./index.css";
+import React, { useEffect, useState } from "react";
+import { initializeApp } from "firebase/app";
+import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "firebase/auth";
+import "./App.css";
+
+// Firebase config
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_PROJECT_ID.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID",
+};
+
+// Initialize Firebase
+initializeApp(firebaseConfig);
+const auth = getAuth();
+const provider = new GoogleAuthProvider();
 
 function App() {
   const [user, setUser] = useState(null);
-  const [error, setError] = useState("");
-  const [sheetData, setSheetData] = useState(null);
+  const [sheetData, setSheetData] = useState({});
 
-  const loginSound = new Audio("/login.mp3");
-  const logoutSound = new Audio("/logout.mp3");
+  const handleSignIn = () => {
+    signInWithPopup(auth, provider).catch((error) => {
+      console.error("Error signing in:", error);
+    });
+  };
+
+  const handleSignOut = () => {
+    signOut(auth);
+  };
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((u) => setUser(u));
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      setUser(currentUser);
+
+      if (currentUser) {
+        // Fetch user data from Google Sheet API or a backend that links Sheets to user info
+        try {
+          const res = await fetch("https://YOUR_BACKEND_API/getUserData?email=" + currentUser.email);
+          const data = await res.json();
+          setSheetData(data);
+        } catch (error) {
+          console.error("Error fetching sheet data:", error);
+        }
+      }
+    });
+
     return () => unsubscribe();
   }, []);
 
-  useEffect(() => {
-    if (user?.email) {
-      fetch(
-        `https://script.google.com/macros/s/AKfycbwxpUD2FVQKVhFYX2rSg4b4sqtEcZ9YuMcxfimok6sJWvAx4VYlScl-QwbiHb5My6xK-g/exec?email=${encodeURIComponent(
-          user.email
-        )}`
-      )
-        .then((res) => res.json())
-        .then((data) => {
-          setSheetData(data);
-          console.log("Fetched Google Sheet data:", data);
-        })
-        .catch((err) => {
-          console.error("Error fetching data from Google Sheet:", err);
-        });
-    }
-  }, [user]);
+  return (
+    <div className="App">
+      <div className="bubbles"></div>
 
-  const handleGoogleSignin = async () => {
-    setError("");
-    try {
-      await signInWithPopup(auth, googleProvider);
-      loginSound.play();
-    } catch (e) {
-      setError(e.message);
-    }
-  };
+      <div
+        style={{
+          maxWidth: "400px",
+          margin: "auto",
+          background: "rgba(255, 215, 0, 0.05)",
+          border: "1px solid rgba(255, 215, 0, 0.3)",
+          borderRadius: "20px",
+          padding: "30px",
+          textAlign: "center",
+          color: "white",
+          boxShadow: "0 0 40px rgba(255, 215, 0, 0.2)",
+          marginTop: "10vh",
+        }}
+      >
+        {user ? (
+          <>
+            <div style={{ marginBottom: "20px" }}>
+              <img
+                src="/logo.png"
+                alt="Islamic Bayan"
+                style={{
+                  width: "80px",
+                  height: "80px",
+                  borderRadius: "50%",
+                  border: "2px solid #ffd700",
+                  marginBottom: "10px",
+                  objectFit: "cover",
+                }}
+              />
+              <h2 style={{ color: "#ffd700", fontWeight: "bold" }}>Welcome,</h2>
+              <h3 style={{ color: "#ffd700", marginBottom: "10px" }}>Islamic bayan</h3>
+            </div>
 
-  const handleSignout = async () => {
-    setError("");
-    try {
-      await signOut(auth);
-      logoutSound.play();
-      setSheetData(null);
-    } catch (e) {
-      setError(e.message);
-    }
-  };
+            <div style={{ textAlign: "left", marginBottom: "20px" }}>
+              <p><strong>Full Name:</strong> {sheetData.name || user.displayName}</p>
+              <p><strong>Whatsapp:</strong> {sheetData.whatsapp || "N/A"}</p>
+              <p><strong>Profile Picture:</strong></p>
 
-  if (user) {
-    return (
-      <div className="container">
-        <div className="card">
-          <img
-            className="avatar"
-            src={user.photoURL || "https://i.imgur.com/0y0y0y0.png"}
-            alt="User"
-          />
-          <h2>Welcome,</h2>
-          <h3>{user.displayName || user.email}</h3>
-
-          {sheetData && !sheetData.error && (
-            <div style={{ marginTop: "1rem", textAlign: "left" }}>
-              <p>
-                <strong>Full Name:</strong>{" "}
-                {sheetData.fullName || sheetData.fullname || "N/A"}
-              </p>
-              <p>
-                <strong>Whatsapp:</strong> {sheetData.whatsapp || "N/A"}
-              </p>
-              <p>
-                <strong>Profile Picture:</strong>
-              </p>
               {sheetData.profilePicture || sheetData.picture ? (
-                <img
-                  src={
-                    (sheetData.profilePicture || sheetData.picture).replace(
-                      "open?id=",
-                      "uc?export=view&id="
-                    )
+                (() => {
+                  const imageURL = sheetData.profilePicture || sheetData.picture;
+                  let finalImageURL = imageURL;
+                  if (imageURL?.includes("drive.google.com")) {
+                    const match = imageURL.match(/[-\w]{25,}/);
+                    if (match) {
+                      finalImageURL = `https://drive.google.com/uc?export=view&id=${match[0]}`;
+                    }
                   }
-                  alt="Profile"
-                  style={{
-                    width: "180px",
-                    height: "180px",
-                    borderRadius: "25px",
-                    marginTop: "10px",
-                    objectFit: "cover",
-                    border: "3px solid #ffd700",
-                    boxShadow: "0 4px 12px rgba(255, 215, 0, 0.3)",
-                  }}
-                />
+                  return (
+                    <img
+                      src={finalImageURL}
+                      alt="Profile"
+                      style={{
+                        width: "180px",
+                        height: "180px",
+                        borderRadius: "25px",
+                        marginTop: "10px",
+                        objectFit: "cover",
+                        border: "3px solid #ffd700",
+                        boxShadow: "0 4px 12px rgba(255, 215, 0, 0.3)",
+                      }}
+                    />
+                  );
+                })()
               ) : (
                 <p>N/A</p>
               )}
             </div>
-          )}
 
-          {sheetData?.error && (
-            <p className="error" style={{ marginTop: "1rem" }}>
-              {sheetData.error}
-            </p>
-          )}
-
-          <button className="button" onClick={handleSignout}>
-            Sign out
+            <button
+              onClick={handleSignOut}
+              style={{
+                padding: "10px 20px",
+                backgroundColor: "#ffd700",
+                color: "#000",
+                border: "none",
+                borderRadius: "10px",
+                fontWeight: "bold",
+                cursor: "pointer",
+                boxShadow: "0 4px 8px rgba(255, 215, 0, 0.2)",
+              }}
+            >
+              Sign out
+            </button>
+          </>
+        ) : (
+          <button
+            onClick={handleSignIn}
+            style={{
+              padding: "10px 20px",
+              backgroundColor: "#ffd700",
+              color: "#000",
+              border: "none",
+              borderRadius: "10px",
+              fontWeight: "bold",
+              cursor: "pointer",
+              boxShadow: "0 4px 8px rgba(255, 215, 0, 0.2)",
+            }}
+          >
+            Sign in with Google
           </button>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="container">
-      <div className="card">
-        <h2>Sign In With Google</h2>
-        <button className="button google-btn" onClick={handleGoogleSignin}>
-          Sign in with Google
-        </button>
-        {error && <p className="error">{error}</p>}
+        )}
       </div>
     </div>
   );
