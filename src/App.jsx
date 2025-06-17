@@ -64,11 +64,11 @@ function App() {
           />
           <h2>Welcome,</h2>
           <h3>{user.displayName || user.email}</h3>
-          
+
           {sheetData && !sheetData.error && (
             <div style={{ marginTop: "1rem", textAlign: "left" }}>
-              <p><strong>Full Name:</strong> {sheetData.name}</p>
-              <p><strong>Whatsapp:</strong> {sheetData.contact}</p>
+              <p><strong>Full Name:</strong> {sheetData.fullname || "N/A"}</p>
+              <p><strong>Whatsapp:</strong> {sheetData.whatsapp || "N/A"}</p>
               <p>
                 <strong>Profile Picture:</strong><br />
                 <a href={sheetData.picture} target="_blank" rel="noreferrer">View Picture</a>
