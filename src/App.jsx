@@ -7,7 +7,7 @@ import {
   onAuthStateChanged,
   signOut,
 } from "firebase/auth";
-import "./App.css";
+import "./app.css"; // Fixed import path
 
 // Firebase configuration
 const firebaseConfig = {
