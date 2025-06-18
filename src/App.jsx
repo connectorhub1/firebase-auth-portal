@@ -9,7 +9,7 @@ import {
 } from "firebase/auth";
 import "./App.css";
 
-// ✅ Your Firebase configuration
+// Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyBOUvPz5GUz-hf4G0f9cVPmAX2pphdwRtg",
   authDomain: "authportal-74915.firebaseapp.com",
@@ -28,10 +28,13 @@ const provider = new GoogleAuthProvider();
 function App() {
   const [user, setUser] = useState(null);
   const [sheetData, setSheetData] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleSignIn = () => {
     signInWithPopup(auth, provider).catch((error) => {
       console.error("Error signing in:", error);
+      setError("Failed to sign in. Please try again.");
     });
   };
 
@@ -42,22 +45,45 @@ function App() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
+      setSheetData({});
+      setError("");
 
       if (currentUser) {
+        setLoading(true);
         try {
           const res = await fetch(
             `https://script.google.com/macros/s/AKfycbwxpUD2FVQKVhFYX2rSg4b4sqtEcZ9YuMcxfimok6sJWvAx4VYlScl-QwbiHb5My6xK-g/exec?email=${currentUser.email}`
           );
+          
+          if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+          }
+          
           const data = await res.json();
-          setSheetData(data);
+          
+          if (data.error) {
+            setError(data.error);
+          } else {
+            setSheetData(data);
+          }
         } catch (error) {
           console.error("Error fetching sheet data:", error);
+          setError("Failed to load user data. Please try again later.");
+        } finally {
+          setLoading(false);
         }
       }
     });
 
     return () => unsubscribe();
   }, []);
+
+  // Function to extract Google Drive ID from URL
+  const extractDriveId = (url) => {
+    const regex = /[-\w]{25,}/;
+    const match = url.match(regex);
+    return match ? match[0] : null;
+  };
 
   return (
     <div className="App">
@@ -77,6 +103,8 @@ function App() {
           marginTop: "10vh",
         }}
       >
+        {error && <div style={{ color: "#ff5252", marginBottom: "15px" }}>{error}</div>}
+        
         {user ? (
           <>
             <div style={{ marginBottom: "20px" }}>
@@ -98,88 +126,83 @@ function App() {
               </h3>
             </div>
 
-            <div style={{ textAlign: "left", marginBottom: "20px" }}>
-              <p>
-                <strong>Full Name:</strong>{" "}
-                {sheetData.fullname || user.displayName}
-              </p>
-              <p>
-                <strong>Whatsapp:</strong> {sheetData.whatsapp || "N/A"}
-              </p>
-              <p>
-                <strong>Profile Picture:</strong>
-              </p>
-
-              <div 
-                style={{
-                  width: "180px",
-                  height: "180px",
-                  borderRadius: "25px",
-                  marginTop: "10px",
-                  overflow: "hidden",
-                  position: "relative",
-                  border: "3px solid #ffd700",
-                  boxShadow: "0 4px 12px rgba(255, 215, 0, 0.3)",
-                  background: "rgba(255, 215, 0, 0.1)"
-                }}
-              >
-                {sheetData.picture ? (
-                  (() => {
-                    let imageURL = sheetData.picture;
-                    
-                    // Handle Google Drive URLs
-                    if (imageURL.includes("drive.google.com")) {
-                      const match = imageURL.match(/[-\w]{25,}/);
-                      if (match && match[0]) {
-                        imageURL = `https://drive.google.com/uc?export=view&id=${match[0]}`;
-                      }
-                    }
-                    
-                    return (
-                      <img
-                        src={imageURL}
-                        alt="Profile"
-                        style={{
-                          width: "100%",
-                          height: "100%",
-                          objectFit: "cover",
-                          position: "absolute",
-                          top: 0,
-                          left: 0,
-                        }}
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.parentNode.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#ffd700">Image not available</div>';
-                        }}
-                      />
-                    );
-                  })()
-                ) : (
-                  <div style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    height: "100%",
-                    color: "#ffd700"
-                  }}>
-                    No image available
-                  </div>
-                )}
+            {loading ? (
+              <div style={{ margin: "20px 0", color: "#ffd700" }}>
+                Loading user data...
               </div>
-            </div>
+            ) : (
+              <div style={{ textAlign: "left", marginBottom: "20px" }}>
+                <p>
+                  <strong>Full Name:</strong>{" "}
+                  {sheetData.fullname || user.displayName}
+                </p>
+                <p>
+                  <strong>Whatsapp:</strong> {sheetData.whatsapp || "N/A"}
+                </p>
+                <p>
+                  <strong>Profile Picture:</strong>
+                </p>
+
+                <div 
+                  style={{
+                    width: "180px",
+                    height: "180px",
+                    borderRadius: "25px",
+                    marginTop: "10px",
+                    overflow: "hidden",
+                    position: "relative",
+                    border: "3px solid #ffd700",
+                    boxShadow: "0 4px 12px rgba(255, 215, 0, 0.3)",
+                    background: "rgba(255, 215, 0, 0.1)"
+                  }}
+                >
+                  {sheetData.picture ? (
+                    (() => {
+                      let imageURL = sheetData.picture;
+                      const driveId = extractDriveId(imageURL);
+                      
+                      if (driveId) {
+                        imageURL = `https://drive.google.com/uc?export=view&id=${driveId}`;
+                      }
+                      
+                      return (
+                        <img
+                          src={imageURL}
+                          alt="Profile"
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                            position: "absolute",
+                            top: 0,
+                            left: 0,
+                          }}
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.parentNode.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#ffd700">Image not available</div>';
+                          }}
+                        />
+                      );
+                    })()
+                  ) : (
+                    <div style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      height: "100%",
+                      color: "#ffd700"
+                    }}>
+                      No image available
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             <button
               onClick={handleSignOut}
-              style={{
-                padding: "10px 20px",
-                backgroundColor: "#ffd700",
-                color: "#000",
-                border: "none",
-                borderRadius: "10px",
-                fontWeight: "bold",
-                cursor: "pointer",
-                boxShadow: "0 4px 8px rgba(255, 215, 0, 0.2)",
-              }}
+              className="button"
+              style={{ marginTop: "15px" }}
             >
               Sign out
             </button>
@@ -187,16 +210,7 @@ function App() {
         ) : (
           <button
             onClick={handleSignIn}
-            style={{
-              padding: "10px 20px",
-              backgroundColor: "#ffd700",
-              color: "#000",
-              border: "none",
-              borderRadius: "10px",
-              fontWeight: "bold",
-              cursor: "pointer",
-              boxShadow: "0 4px 8px rgba(255, 215, 0, 0.2)",
-            }}
+            className="button"
           >
             Sign in with Google
           </button>
