@@ -101,7 +101,7 @@ function App() {
             <div style={{ textAlign: "left", marginBottom: "20px" }}>
               <p>
                 <strong>Full Name:</strong>{" "}
-                {sheetData.name || user.displayName}
+                {sheetData.fullname || user.displayName}
               </p>
               <p>
                 <strong>Whatsapp:</strong> {sheetData.whatsapp || "N/A"}
@@ -110,36 +110,62 @@ function App() {
                 <strong>Profile Picture:</strong>
               </p>
 
-              {sheetData.profilePicture || sheetData.picture ? (
-                (() => {
-                  const imageURL =
-                    sheetData.profilePicture || sheetData.picture;
-                  let finalImageURL = imageURL;
-                  if (imageURL?.includes("drive.google.com")) {
-                    const match = imageURL.match(/[-\w]{25,}/);
-                    if (match) {
-                      finalImageURL = `https://drive.google.com/uc?export=view&id=${match[0]}`;
+              <div 
+                style={{
+                  width: "180px",
+                  height: "180px",
+                  borderRadius: "25px",
+                  marginTop: "10px",
+                  overflow: "hidden",
+                  position: "relative",
+                  border: "3px solid #ffd700",
+                  boxShadow: "0 4px 12px rgba(255, 215, 0, 0.3)",
+                  background: "rgba(255, 215, 0, 0.1)"
+                }}
+              >
+                {sheetData.picture ? (
+                  (() => {
+                    let imageURL = sheetData.picture;
+                    
+                    // Handle Google Drive URLs
+                    if (imageURL.includes("drive.google.com")) {
+                      const match = imageURL.match(/[-\w]{25,}/);
+                      if (match && match[0]) {
+                        imageURL = `https://drive.google.com/uc?export=view&id=${match[0]}`;
+                      }
                     }
-                  }
-                  return (
-                    <img
-                      src={finalImageURL}
-                      alt="Profile"
-                      style={{
-                        width: "180px",
-                        height: "180px",
-                        borderRadius: "25px",
-                        marginTop: "10px",
-                        objectFit: "cover",
-                        border: "3px solid #ffd700",
-                        boxShadow: "0 4px 12px rgba(255, 215, 0, 0.3)",
-                      }}
-                    />
-                  );
-                })()
-              ) : (
-                <p>N/A</p>
-              )}
+                    
+                    return (
+                      <img
+                        src={imageURL}
+                        alt="Profile"
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                          position: "absolute",
+                          top: 0,
+                          left: 0,
+                        }}
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.parentNode.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#ffd700">Image not available</div>';
+                        }}
+                      />
+                    );
+                  })()
+                ) : (
+                  <div style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    height: "100%",
+                    color: "#ffd700"
+                  }}>
+                    No image available
+                  </div>
+                )}
+              </div>
             </div>
 
             <button
