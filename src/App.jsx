@@ -78,8 +78,23 @@ function App() {
     return () => unsubscribe();
   }, []);
 
-  // Function to extract Google Drive ID from URL
   const extractDriveId = (url) => {
+    if (!url) return null;
+    
+    if (url.includes("drive.google.com")) {
+      if (url.includes("/file/d/")) {
+        const parts = url.split("/file/d/");
+        if (parts.length > 1) {
+          return parts[1].split("/")[0];
+        }
+      } else if (url.includes("id=")) {
+        const idParam = url.split("id=")[1];
+        return idParam.split("&")[0];
+      } else if (url.includes("/open?id=")) {
+        return url.split("/open?id=")[1];
+      }
+    }
+    
     const regex = /[-\w]{25,}/;
     const match = url.match(regex);
     return match ? match[0] : null;
@@ -158,16 +173,14 @@ function App() {
                 >
                   {sheetData.picture ? (
                     (() => {
-                      let imageURL = sheetData.picture;
-                      const driveId = extractDriveId(imageURL);
-                      
-                      if (driveId) {
-                        imageURL = `https://drive.google.com/uc?export=view&id=${driveId}`;
-                      }
+                      const driveId = extractDriveId(sheetData.picture);
+                      const imageUrl = driveId 
+                        ? `https://lh3.googleusercontent.com/d/${driveId}=s500` 
+                        : sheetData.picture;
                       
                       return (
                         <img
-                          src={imageURL}
+                          src={imageUrl}
                           alt="Profile"
                           style={{
                             width: "100%",
@@ -179,7 +192,11 @@ function App() {
                           }}
                           onError={(e) => {
                             e.target.onerror = null;
-                            e.target.parentNode.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#ffd700">Image not available</div>';
+                            if (driveId) {
+                              e.target.src = `https://drive.google.com/uc?export=view&id=${driveId}`;
+                            } else {
+                              e.target.parentNode.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#ffd700">Image not available</div>';
+                            }
                           }}
                         />
                       );
