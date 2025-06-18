@@ -7,7 +7,7 @@ import {
   onAuthStateChanged,
   signOut,
 } from "firebase/auth";
-import "./app.css"; // Fixed import path
+import "./app.css";
 
 // Firebase configuration
 const firebaseConfig = {
@@ -30,6 +30,8 @@ function App() {
   const [sheetData, setSheetData] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showWelcome, setShowWelcome] = useState(false);
+  const [imageLoading, setImageLoading] = useState(true);
 
   const handleSignIn = () => {
     signInWithPopup(auth, provider).catch((error) => {
@@ -47,8 +49,12 @@ function App() {
       setUser(currentUser);
       setSheetData({});
       setError("");
+      setImageLoading(true);
 
       if (currentUser) {
+        setShowWelcome(true);
+        setTimeout(() => setShowWelcome(false), 3000); // Hide after 3 seconds
+
         setLoading(true);
         try {
           const res = await fetch(
@@ -104,6 +110,25 @@ function App() {
     <div className="App">
       <div className="bubbles"></div>
 
+      {/* Welcome Popup */}
+      {showWelcome && (
+        <div style={{
+          position: 'fixed',
+          top: '20px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          backgroundColor: 'rgba(255, 215, 0, 0.9)',
+          color: '#000',
+          padding: '10px 20px',
+          borderRadius: '10px',
+          zIndex: 100,
+          boxShadow: '0 4px 8px rgba(0,0,0,0.3)',
+          fontWeight: 'bold',
+        }}>
+          Welcome Islamic Bayan!
+        </div>
+      )}
+
       <div
         style={{
           maxWidth: "400px",
@@ -116,29 +141,88 @@ function App() {
           color: "white",
           boxShadow: "0 0 40px rgba(255, 215, 0, 0.2)",
           marginTop: "10vh",
+          marginBottom: "20px",
+          overflowY: "auto", // Make the container scrollable
+          maxHeight: "90vh", // Limit height to viewport
         }}
       >
         {error && <div style={{ color: "#ff5252", marginBottom: "15px" }}>{error}</div>}
         
         {user ? (
           <>
-            <div style={{ marginBottom: "20px" }}>
-              <img
-                src="/logo.png"
-                alt="Islamic Bayan"
-                style={{
+            <div style={{ marginBottom: "20px", position: 'relative' }}>
+              {/* Profile picture at top right */}
+              {sheetData.picture && (
+                <div style={{
+                  position: 'absolute',
+                  top: 0,
+                  right: 0,
                   width: "80px",
                   height: "80px",
                   borderRadius: "50%",
+                  overflow: "hidden",
                   border: "2px solid #ffd700",
-                  marginBottom: "10px",
-                  objectFit: "cover",
-                }}
-              />
-              <h2 style={{ color: "#ffd700", fontWeight: "bold" }}>Welcome,</h2>
-              <h3 style={{ color: "#ffd700", marginBottom: "10px" }}>
-                Islamic bayan
-              </h3>
+                  boxShadow: "0 4px 12px rgba(255, 215, 0, 0.3)",
+                }}>
+                  {sheetData.picture ? (
+                    (() => {
+                      const driveId = extractDriveId(sheetData.picture);
+                      const imageUrl = driveId 
+                        ? `https://lh3.googleusercontent.com/d/${driveId}=s200` 
+                        : sheetData.picture;
+                      
+                      return (
+                        <img
+                          src={imageUrl}
+                          alt="Profile"
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                          }}
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            if (driveId) {
+                              e.target.src = `https://drive.google.com/uc?export=view&id=${driveId}`;
+                            } else {
+                              e.target.parentNode.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#ffd700">N/A</div>';
+                            }
+                          }}
+                        />
+                      );
+                    })()
+                  ) : (
+                    <div style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      height: "100%",
+                      color: "#ffd700"
+                    }}>
+                      N/A
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              <div style={{ textAlign: 'center', marginTop: '20px' }}>
+                <img
+                  src="/logo.png"
+                  alt="Islamic Bayan"
+                  style={{
+                    width: "80px",
+                    height: "80px",
+                    borderRadius: "50%",
+                    border: "2px solid #ffd700",
+                    marginBottom: "10px",
+                    objectFit: "cover",
+                  }}
+                />
+                <h2 style={{ color: "#ffd700", fontWeight: "bold" }}>Welcome,</h2>
+                <h3 style={{ color: "#ffd700", marginBottom: "10px" }}>
+                  Islamic bayan
+                </h3>
+              </div>
             </div>
 
             {loading ? (
@@ -154,65 +238,6 @@ function App() {
                 <p>
                   <strong>Whatsapp:</strong> {sheetData.whatsapp || "N/A"}
                 </p>
-                <p>
-                  <strong>Profile Picture:</strong>
-                </p>
-
-                <div 
-                  style={{
-                    width: "180px",
-                    height: "180px",
-                    borderRadius: "25px",
-                    marginTop: "10px",
-                    overflow: "hidden",
-                    position: "relative",
-                    border: "3px solid #ffd700",
-                    boxShadow: "0 4px 12px rgba(255, 215, 0, 0.3)",
-                    background: "rgba(255, 215, 0, 0.1)"
-                  }}
-                >
-                  {sheetData.picture ? (
-                    (() => {
-                      const driveId = extractDriveId(sheetData.picture);
-                      const imageUrl = driveId 
-                        ? `https://lh3.googleusercontent.com/d/${driveId}=s500` 
-                        : sheetData.picture;
-                      
-                      return (
-                        <img
-                          src={imageUrl}
-                          alt="Profile"
-                          style={{
-                            width: "100%",
-                            height: "100%",
-                            objectFit: "cover",
-                            position: "absolute",
-                            top: 0,
-                            left: 0,
-                          }}
-                          onError={(e) => {
-                            e.target.onerror = null;
-                            if (driveId) {
-                              e.target.src = `https://drive.google.com/uc?export=view&id=${driveId}`;
-                            } else {
-                              e.target.parentNode.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#ffd700">Image not available</div>';
-                            }
-                          }}
-                        />
-                      );
-                    })()
-                  ) : (
-                    <div style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      height: "100%",
-                      color: "#ffd700"
-                    }}>
-                      No image available
-                    </div>
-                  )}
-                </div>
               </div>
             )}
 
