@@ -2,7 +2,7 @@ body {
   background: #0f0f0f;
   margin: 0;
   font-family: 'Segoe UI', 'Roboto', 'Arial', sans-serif;
-  overflow: hidden;
+  overflow: auto; /* Changed from hidden to auto */
   position: relative;
   height: 100vh;
   color: #ffd700;
@@ -42,73 +42,11 @@ body {
   }
 }
 
-.container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  position: relative;
-  z-index: 2;
+/* Add fadeOut animation */
+@keyframes fadeOut {
+  0% { opacity: 1; }
+  70% { opacity: 1; }
+  100% { opacity: 0; visibility: hidden; }
 }
 
-.card {
-  background: rgba(255, 215, 0, 0.1);
-  padding: 2.5rem 2rem;
-  border-radius: 20px;
-  box-shadow: 0 8px 24px rgba(255, 215, 0, 0.2);
-  text-align: center;
-  max-width: 350px;
-  width: 100%;
-  backdrop-filter: blur(10px);
-  border: 1px solid #ffd70044;
-}
-
-.google-logo {
-  width: 48px;
-  margin-bottom: 10px;
-  background: white;
-  border-radius: 8px;
-  padding: 4px;
-}
-
-.avatar {
-  width: 72px;
-  height: 72px;
-  border-radius: 50%;
-  margin-bottom: 10px;
-  border: 3px solid #ffd700;
-}
-
-.button {
-  margin-top: 18px;
-  background: #ffd700;
-  color: #000;
-  border: none;
-  border-radius: 6px;
-  padding: 12px 24px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.18s;
-  box-shadow: 0 2px 6px rgba(255, 215, 0, 0.3);
-}
-
-.button:hover {
-  background: #e6be00;
-}
-
-.google-btn {
-  background: #111;
-  color: #ffd700;
-  border: 1px solid #ffd700aa;
-}
-
-.google-btn:hover {
-  background: #222;
-}
-
-.error {
-  color: #ff5252;
-  margin-top: 14px;
-  font-size: 1rem;
-}
+/* Rest of your existing styles... */
