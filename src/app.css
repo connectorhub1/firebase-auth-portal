@@ -65,3 +65,30 @@
 .button:hover {
   background-color: #e6be00;
 }
+
+/* Make the page scrollable */
+body {
+  overflow: auto;
+}
+
+/* Animation for welcome popup */
+@keyframes fadeOut {
+  0% { opacity: 1; }
+  70% { opacity: 1; }
+  100% { opacity: 0; visibility: hidden; }
+}
+
+/* Section styling */
+.info-section {
+  background: rgba(255, 215, 0, 0.1);
+  padding: 15px;
+  border-radius: 10px;
+  margin-bottom: 15px;
+}
+
+.section-title {
+  color: #ffd700;
+  border-bottom: 1px solid #ffd700;
+  padding-bottom: 5px;
+  margin-top: 0;
+}
